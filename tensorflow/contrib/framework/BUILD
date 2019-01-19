@@ -1,14 +1,15 @@
 # Description:
 #   contains parts of TensorFlow that are experimental or unstable and which are not supported.
 
-licenses(["notice"])  # Apache 2.0
-
-exports_files(["LICENSE"])
-
 package(default_visibility = [
     "//learning/brain:__subpackages__",
     "//tensorflow:__subpackages__",
+    "//tensorflow_model_optimization:__subpackages__",
 ])
+
+licenses(["notice"])  # Apache 2.0
+
+exports_files(["LICENSE"])
 
 load("//tensorflow:tensorflow.bzl", "py_test")
 load("//tensorflow:tensorflow.bzl", "tf_custom_op_library")
@@ -28,7 +29,6 @@ tf_custom_op_py_library(
         "python/framework/graph_util.py",
         "python/framework/tensor_util.py",
         "python/ops/__init__.py",
-        "python/ops/accumulate_n_v2.py",
         "python/ops/arg_scope.py",
         "python/ops/audio_ops.py",
         "python/ops/checkpoint_ops.py",
@@ -47,6 +47,12 @@ tf_custom_op_py_library(
         ":variable_ops_op_lib",
     ],
     srcs_version = "PY2AND3",
+    visibility = [
+        "//learning/brain:__subpackages__",
+        "//tensorflow:__subpackages__",
+        "//tensorflow_estimator:__subpackages__",
+        "//video/youtube/personalization:__subpackages__",
+    ],
     deps = [
         ":gen_variable_ops",
         "//tensorflow/contrib/util:util_py",
@@ -63,7 +69,10 @@ tf_custom_op_py_library(
         "//tensorflow/python:math_ops",
         "//tensorflow/python:platform",
         "//tensorflow/python:pywrap_tensorflow",
+        "//tensorflow/python:resource_variable_ops",
         "//tensorflow/python:script_ops",
+        "//tensorflow/python:smart_cond",
+        "//tensorflow/python:sort_ops",
         "//tensorflow/python:sparse_tensor",
         "//tensorflow/python:state_ops",
         "//tensorflow/python:state_ops_gen",
@@ -92,6 +101,7 @@ tf_kernel_library(
     ],
     deps = [
         "//tensorflow/core:framework",
+        "//tensorflow/core:framework_headers_lib",
         "//third_party/eigen3",
     ],
     alwayslink = 1,
@@ -161,23 +171,6 @@ py_test(
     ],
 )
 
-py_test(
-    name = "accumulate_n_v2_test",
-    size = "small",
-    srcs = ["python/ops/accumulate_n_v2_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":framework_py",
-        "//tensorflow/python:client_testlib",
-        "//tensorflow/python:framework_for_generated_wrappers",
-        "//tensorflow/python:framework_test_lib",
-        "//tensorflow/python:gradients",
-        "//tensorflow/python:platform_test",
-        "//tensorflow/python:variables",
-        "//third_party/py/numpy",
-    ],
-)
-
 cuda_py_test(
     name = "critical_section_test",
     size = "medium",
@@ -193,26 +186,8 @@ cuda_py_test(
         "//tensorflow/python:platform_test",
         "//tensorflow/python:resource_variable_ops",
         "//tensorflow/python:tensor_array_ops",
-    ],
-)
-
-py_test(
-    name = "accumulate_n_v2_eager_test",
-    size = "small",
-    srcs = ["python/ops/accumulate_n_v2_eager_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":framework_py",
-        "//tensorflow/python:client_testlib",
-        "//tensorflow/python:framework_for_generated_wrappers",
-        "//tensorflow/python:framework_test_lib",
-        "//tensorflow/python:gradients",
-        "//tensorflow/python:math_ops",
-        "//tensorflow/python:resource_variable_ops",
-        "//tensorflow/python/eager:backprop",
+        "//tensorflow/python/data/ops:dataset_ops",
         "//tensorflow/python/eager:context",
-        "//tensorflow/python/eager:tape",
-        "//third_party/py/numpy",
     ],
 )
 
@@ -342,30 +317,4 @@ py_test(
         "//tensorflow/python:variables",
         "//third_party/py/numpy",
     ],
-)
-
-py_test(
-    name = "sort_ops_test",
-    size = "medium",
-    srcs = ["python/ops/sort_ops_test.py"],
-    srcs_version = "PY2AND3",
-    deps = [
-        ":framework_py",
-        "//tensorflow/python:array_ops",
-        "//tensorflow/python:client_testlib",
-        "//tensorflow/python:random_ops",
-        "//third_party/py/numpy",
-    ],
-)
-
-filegroup(
-    name = "all_files",
-    srcs = glob(
-        ["**/*"],
-        exclude = [
-            "**/METADATA",
-            "**/OWNERS",
-        ],
-    ),
-    visibility = ["//tensorflow:__subpackages__"],
 )

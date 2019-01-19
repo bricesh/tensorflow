@@ -45,7 +45,9 @@ class Mutex : public ResourceBase {
     VLOG(2) << "Creating mutex with name " << name << ": " << this;
   }
 
-  string DebugString() override { return strings::StrCat("Mutex ", name_); }
+  string DebugString() const override {
+    return strings::StrCat("Mutex ", name_);
+  }
 
   class LockReleaser {
    public:
@@ -127,7 +129,7 @@ class Mutex : public ResourceBase {
       }
     }
     thread_pool_->Schedule(std::bind(
-        [this, c, cm, cancelled,
+        [this, cm, cancelled,
          token](std::function<void(const Status& s, SharedLockReleaser&& lock)>
                     fn_) {
           bool local_locked;
@@ -173,7 +175,7 @@ class MutexLockOp : public AsyncOpKernel {
     OP_REQUIRES_OK_ASYNC(
         c,
         LookupOrCreateResource<Mutex>(c, HandleFromInput(c, 0), &mutex,
-                                      [this, c](Mutex** ptr) {
+                                      [c](Mutex** ptr) {
                                         *ptr = new Mutex(
                                             c, HandleFromInput(c, 0).name());
                                         return Status::OK();
@@ -186,11 +188,10 @@ class MutexLockOp : public AsyncOpKernel {
 
     mutex->AcquireAsync(
         c, std::bind(
-               [this, c, variant, mutex](DoneCallback done_,
-                                         // End of bound arguments.
-                                         const Status& s,
-                                         Mutex::SharedLockReleaser&& lock) {
-                 core::ScopedUnref unref(mutex);
+               [c, variant, mutex](DoneCallback done_,
+                                   // End of bound arguments.
+                                   const Status& s,
+                                   Mutex::SharedLockReleaser&& lock) {
                  VLOG(2) << "Finished locking mutex " << mutex
                          << " with lock: " << lock.shared_lock.get()
                          << " status: " << s.ToString();
@@ -199,6 +200,7 @@ class MutexLockOp : public AsyncOpKernel {
                  } else {
                    c->SetStatus(s);
                  }
+                 mutex->Unref();
                  done_();
                },
                std::move(done), std::placeholders::_1, std::placeholders::_2));

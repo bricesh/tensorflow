@@ -45,6 +45,7 @@ cuda_py_test(
         "//tensorflow/python:math_ops",
         "//tensorflow/python:random_ops",
     ],
+    xla_enable_strict_auto_jit = True,
 )
 
 cuda_py_test(
@@ -64,6 +65,7 @@ cuda_py_test(
         "//tensorflow/python:random_ops",
     ],
     shard_count = 3,
+    xla_enable_strict_auto_jit = True,
 )
 
 cuda_py_test(
@@ -75,6 +77,7 @@ cuda_py_test(
         "//tensorflow/python:client_testlib",
         "//tensorflow/python:random_ops",
     ],
+    xla_enable_strict_auto_jit = True,
 )
 
 cuda_py_test(
@@ -88,6 +91,23 @@ cuda_py_test(
         "//tensorflow/python:framework_for_generated_wrappers",
         "//tensorflow/python:random_ops",
     ],
+    xla_enable_strict_auto_jit = True,
+)
+
+cuda_py_test(
+    name = "stateless_random_ops_test",
+    size = "medium",
+    srcs = ["stateless_random_ops_test.py"],
+    additional_deps = [
+        "//third_party/py/numpy",
+        "//tensorflow/python:array_ops",
+        "//tensorflow/python:client_testlib",
+        "//tensorflow/python:framework",
+        "//tensorflow/python:platform",
+        "//tensorflow/python:random_ops",
+        "//tensorflow/python:stateless_random_ops",
+    ],
+    xla_enable_strict_auto_jit = True,
 )
 
 cuda_py_test(
@@ -105,6 +125,25 @@ cuda_py_test(
     ],
     shard_count = 4,
     tags = ["nozapfhahn"],
+    xla_enable_strict_auto_jit = True,
+)
+
+cuda_py_test(
+    name = "random_grad_test",
+    size = "small",
+    srcs = ["random_grad_test.py"],
+    additional_deps = [
+        "//third_party/py/numpy",
+        "//tensorflow/python:array_ops",
+        "//tensorflow/python:client_testlib",
+        "//tensorflow/python:framework",
+        "//tensorflow/python:framework_for_generated_wrappers",
+        "//tensorflow/python:math_ops",
+        "//tensorflow/python:platform",
+        "//tensorflow/python:random_grad",
+        "//tensorflow/python:random_ops",
+    ],
+    xla_enable_strict_auto_jit = True,
 )
 
 cuda_py_test(
@@ -120,16 +159,5 @@ cuda_py_test(
         "//tensorflow/python:platform",
         "//tensorflow/python:random_ops",
     ],
-)
-
-filegroup(
-    name = "all_files",
-    srcs = glob(
-        ["**/*"],
-        exclude = [
-            "**/METADATA",
-            "**/OWNERS",
-        ],
-    ),
-    visibility = ["//tensorflow:__subpackages__"],
+    xla_enable_strict_auto_jit = True,
 )

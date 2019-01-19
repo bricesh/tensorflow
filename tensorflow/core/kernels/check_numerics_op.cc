@@ -15,6 +15,8 @@ limitations under the License.
 
 // See docs in ../ops/array_ops.cc.
 
+#include "tensorflow/core/lib/bfloat16/bfloat16.h"
+
 #include <math.h>
 #include <algorithm>
 #include <numeric>
@@ -137,7 +139,7 @@ class CheckNumericsOp<GPUDevice, T> : public AsyncOpKernel {
     OP_REQUIRES_ASYNC(context, stream != nullptr,
                       errors::Internal("No GPU stream available."), done);
 
-    perftools::gputools::DeviceMemoryBase abnormal_detected_ptr(
+    se::DeviceMemoryBase abnormal_detected_ptr(
         abnormal_detected.flat<int>().data(),
         abnormal_detected.flat<int>().size());
     stream->ThenMemset32(&abnormal_detected_ptr, 0,
@@ -172,8 +174,8 @@ class CheckNumericsOp<GPUDevice, T> : public AsyncOpKernel {
     TensorReference abnormal_detected_ref(abnormal_detected);
     auto check_cb = [this, stream, abnormal_detected_ref,
                      abnormal_detected_host, context, done]() {
-      ::perftools::gputools::cuda::ScopedActivateExecutorContext
-          scoped_activation{stream->parent()};
+      se::cuda::ScopedActivateExecutorContext scoped_activation{
+          stream->parent()};
       auto abnormal_detected_host_flat = abnormal_detected_host.flat<int>();
       int is_nan = abnormal_detected_host_flat(0);
       int is_inf = abnormal_detected_host_flat(1);
@@ -219,6 +221,7 @@ class CheckNumericsOp<GPUDevice, T> : public AsyncOpKernel {
       Name("CheckNumerics").Device(DEVICE_CPU).TypeConstraint<T>("T"), \
       CheckNumericsOp<CPUDevice, T>);
 TF_CALL_half(REGISTER_CPU_KERNEL);
+TF_CALL_bfloat16(REGISTER_CPU_KERNEL);
 TF_CALL_float(REGISTER_CPU_KERNEL);
 TF_CALL_double(REGISTER_CPU_KERNEL);
 

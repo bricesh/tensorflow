@@ -14,6 +14,17 @@ py_library(
     ],
 )
 
+py_library(
+    name = "resnet50_test_lib",
+    srcs = ["resnet50_test.py"],
+    srcs_version = "PY2AND3",
+    deps = [
+        ":resnet50",
+        "//tensorflow:tensorflow_py",
+        "//tensorflow/contrib/eager/python:tfe",
+    ],
+)
+
 cuda_py_test(
     name = "resnet50_test",
     size = "large",
@@ -23,6 +34,13 @@ cuda_py_test(
         "//tensorflow/contrib/summary:summary_test_util",
         "//tensorflow/contrib/eager/python:tfe",
         "//tensorflow:tensorflow_py",
+    ],
+    tags = [
+        "noasan",  # Fix b/118130911
+        "nomsan",  # Fix b/118130911
+        "notsan",  # Fix b/118130911
+        "optonly",
+        "oss_serial",
     ],
 )
 
@@ -40,5 +58,7 @@ cuda_py_test(
         "noasan",
         "nomsan",
         "notsan",
+        "optonly",
+        "oss_serial",
     ],
 )
